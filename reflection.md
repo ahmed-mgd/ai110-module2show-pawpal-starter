@@ -7,6 +7,34 @@
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
 
+Here are some core actions that the user should be able to perform:
+- Add and manage pets
+- Schedule single or recurring tasks (e.g. appointments, feeding, walks)
+- View and organize tasks for the day
+
+Here are the classes we will include:
+- `Owner` will store user information and allow users to create and/or assign themselves to pets. It will store the following attributes:
+    - Name
+    - Pets (ref)
+
+- `Pet` will store information for a given pet and its tasks. Attributes include:
+    - Name
+    - Species
+    - Age
+    - Tasks (ref)
+
+- `Task` will store information for tasks such as feedings, appointments, etc. Attributes include:
+    - Title
+    - Description
+    - Pet
+    - Scheduled time
+    - Recurrence (e.g. daily, monthly, etc)
+    - Completed (bool)
+
+- `Scheduler` will handle the organization logic. Attributes include:
+    - Tasks (ref)
+
+
 **b. Design changes**
 
 - Did your design change during implementation?
