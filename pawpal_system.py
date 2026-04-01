@@ -19,6 +19,7 @@ class Task:
 	scheduled_time: datetime
 	recurrence: RecurrenceType = RecurrenceType.NONE
 	completed: bool = False
+	pet: Pet | None = field(default=None, repr=False)
 
 	def mark_complete(self) -> None:
 		pass
@@ -51,6 +52,7 @@ class Owner:
 	def __init__(self, name: str, pets: list[Pet] | None = None) -> None:
 		self.name = name
 		self.pets = pets if pets is not None else []
+		self._pets_by_name = {pet.name: pet for pet in self.pets}
 
 	def add_pet(self, pet: Pet) -> None:
 		pass

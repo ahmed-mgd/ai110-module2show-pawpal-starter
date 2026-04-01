@@ -40,6 +40,10 @@ Here are the classes we will include:
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
 
+Yes. One change I made was to add a relationship from `Task` to `Pet` to allow `Scheduler` to more easily filter tasks by pet.
+
+I also applied an internal name index `pets_by_name` to avoid linear scans and reduce lookup time.
+
 ---
 
 ## 2. Scheduling Logic and Tradeoffs
