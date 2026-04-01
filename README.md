@@ -32,6 +32,27 @@ source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+### Run the app
+
+```bash
+streamlit run app.py
+```
+
+## Features
+
+- Add and manage owner + pet information
+- Add and edit tasks with time, duration, recurrence, and priority
+- Build a daily plan sorted by priority and time
+- Show conflict warnings when tasks overlap at the same start time
+- Auto-create next occurrence for recurring tasks when completed
+- Filter tasks by pet and completion status
+
+## 📸 Demo
+
+Replace `pawpal_demo.png` with your screenshot filename after you capture it.
+
+<a href="/course_images/ai110/pawpal_demo.png" target="_blank"><img src='/course_images/ai110/pawpal_demo.png' title='PawPal App' width='' alt='PawPal App' class='center-block' /></a>
+
 ## Smarter Scheduling
 
 PawPal+ includes several algorithmic features that make the scheduler more useful for a real pet owner:

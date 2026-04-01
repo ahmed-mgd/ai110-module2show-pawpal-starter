@@ -257,6 +257,12 @@ if generate_clicked:
         for task in pet.tasks:
             scheduler.add_task(task)
 
+    conflict_warnings = scheduler.detect_conflicts()
+    if conflict_warnings:
+        st.warning("Schedule conflicts found. Please review these overlaps:")
+        for warning in conflict_warnings:
+            st.warning(warning)
+
     today_tasks = scheduler.prioritize_tasks(datetime.now().date())
     if today_tasks:
         st.success("Today\'s Schedule")
