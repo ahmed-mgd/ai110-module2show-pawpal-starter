@@ -49,9 +49,7 @@ streamlit run app.py
 
 ## 📸 Demo
 
-Replace `pawpal_demo.png` with your screenshot filename after you capture it.
-
-<a href="/course_images/ai110/pawpal_demo.png" target="_blank"><img src='/course_images/ai110/pawpal_demo.png' title='PawPal App' width='' alt='PawPal App' class='center-block' /></a>
+<a href="/course_images/ai110/image.png" target="_blank"><img src='image.png' title='PawPal App' width='' alt='PawPal App' class='center-block' /></a>
 
 ## Smarter Scheduling
 
