@@ -138,6 +138,88 @@ class Scheduler:
 		"""Get all incomplete tasks for a specific pet on a specific day."""
 		return [t for t in self.get_tasks_for_day(day) if t.pet is pet]
 
+	def sort_by_time(self) -> list[Task]:
+		"""Return all tasks sorted by scheduled_time (earliest first).
+
+		Uses a lambda key on ``scheduled_time`` so that tasks added in any
+		order are always presented chronologically.
+		"""
+		return sorted(self.tasks, key=lambda t: t.scheduled_time)
+
+	def filter_by_status(self, completed: bool) -> list[Task]:
+		"""Return tasks whose completion status matches *completed*.
+
+		Args:
+			completed: Pass ``True`` to get finished tasks, ``False`` for
+				pending ones.
+		"""
+		return [t for t in self.tasks if t.completed == completed]
+
+	def filter_by_pet_name(self, pet_name: str) -> list[Task]:
+		"""Return tasks that belong to the pet with the given name.
+
+		Args:
+			pet_name: The exact name of the pet to filter by.
+		"""
+		return [t for t in self.tasks if t.pet is not None and t.pet.name == pet_name]
+
+	def mark_task_complete(self, task: Task) -> Task | None:
+		"""Mark *task* complete and, if it recurs, schedule the next occurrence.
+
+		When a daily or weekly task is finished the method uses
+		``task.next_due_after`` together with Python's ``timedelta`` to
+		calculate the next due datetime and creates a fresh ``Task`` object
+		with the same attributes.  The new task is registered with both the
+		scheduler and the pet so the owner never has to re-enter it manually.
+
+		Args:
+			task: The task to complete.
+
+		Returns:
+			The newly created follow-up ``Task``, or ``None`` for one-time tasks.
+		"""
+		task.mark_complete()
+		if task.recurrence == RecurrenceType.NONE:
+			return None
+		next_time = task.next_due_after(task.scheduled_time)
+		new_task = Task(
+			title=task.title,
+			description=task.description,
+			scheduled_time=next_time,
+			recurrence=task.recurrence,
+			completed=False,
+			pet=task.pet,
+		)
+		self.add_task(new_task)
+		if task.pet is not None:
+			task.pet.tasks.append(new_task)
+		return new_task
+
+	def detect_conflicts(self) -> list[str]:
+		"""Check all tasks for exact-time collisions and return warning strings.
+
+		Two tasks conflict when they share the same ``scheduled_time``.  Rather
+		than raising an exception the method collects every collision into a
+		human-readable warning so the owner can decide how to resolve it.
+
+		Returns:
+			A list of warning strings (empty when there are no conflicts).
+		"""
+		warnings: list[str] = []
+		seen: dict[datetime, Task] = {}
+		for task in self.sort_by_time():
+			if task.scheduled_time in seen:
+				other = seen[task.scheduled_time]
+				pet_a = task.pet.name if task.pet else "Unknown"
+				pet_b = other.pet.name if other.pet else "Unknown"
+				warnings.append(
+					f"⚠️  Conflict at {task.scheduled_time.strftime('%Y-%m-%d %H:%M')}: "
+					f"'{task.title}' ({pet_a}) overlaps with '{other.title}' ({pet_b})"
+				)
+			else:
+				seen[task.scheduled_time] = task
+		return warnings
+
 	def prioritize_tasks(self, day: date) -> list[Task]:
 		"""Get tasks for a day sorted by scheduled time (earliest first)."""
 		day_tasks = self.get_tasks_for_day(day)

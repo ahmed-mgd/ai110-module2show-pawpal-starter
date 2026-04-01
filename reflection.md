@@ -55,8 +55,9 @@ I also applied an internal name index `pets_by_name` to avoid linear scans and r
 
 **b. Tradeoffs**
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
+The conflict detector checks for exact datetime matches rather than overlapping time windows. This means two tasks that actually overlap can slip through undetected as long as their start times differ by even one minute.
+
+This tradeoff is not overly problematic for a first version because task durations are currently not stored, so there is no reliable way to calculate overlap. An exact-match check is simpler to implement, but we could iterate on this in the future.
 
 ---
 
