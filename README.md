@@ -42,6 +42,28 @@ PawPal+ includes several algorithmic features that make the scheduler more usefu
 - **Recurring task auto-renewal** — `Scheduler.mark_task_complete(task)` marks a task done and, for daily or weekly tasks, automatically creates the next occurrence using Python's `timedelta`. The owner never has to re-enter a routine task.
 - **Conflict detection** — `Scheduler.detect_conflicts()` scans the schedule for tasks with identical start times and returns human-readable warning strings rather than crashing the program, giving the owner a chance to reschedule.
 
+## Testing PawPal+
+
+Run the automated suite with:
+
+```bash
+python -m pytest
+```
+
+The tests cover both happy paths and edge cases for:
+
+- Task completion state changes (`mark_complete`)
+- Pet task management (adding/removing and date retrieval)
+- Owner pet lookup and removal behavior
+- Scheduler chronological sorting (`sort_by_time` and `prioritize_tasks`)
+- Recurrence auto-renewal when completing daily tasks (`mark_task_complete`)
+- Conflict detection for duplicate times (`detect_conflicts`)
+- Edge cases such as empty schedules and missing-pet filters
+
+Confidence Level: 4/5 stars
+
+The suite verifies the core scheduling behaviors reliably, but additional overlap-based conflict checks (using duration windows) would further improve confidence.
+
 ### Suggested workflow
 
 1. Read the scenario carefully and identify requirements and edge cases.
