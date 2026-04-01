@@ -28,6 +28,8 @@ Here are the classes we will include:
     - Description
     - Pet
     - Scheduled time
+    - Duration
+    - Priority
     - Recurrence (e.g. daily, monthly, etc)
     - Completed (bool)
 

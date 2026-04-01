@@ -12,11 +12,19 @@ class RecurrenceType(Enum):
 	MONTHLY = "monthly"
 
 
+class TaskPriority(Enum):
+	HIGH = "high"
+	MEDIUM = "medium"
+	LOW = "low"
+
+
 @dataclass
 class Task:
 	title: str
 	description: str
 	scheduled_time: datetime
+	duration_minutes: int = 30
+	priority: TaskPriority = TaskPriority.MEDIUM
 	recurrence: RecurrenceType = RecurrenceType.NONE
 	completed: bool = False
 	pet: Pet | None = field(default=None, repr=False)
@@ -186,6 +194,8 @@ class Scheduler:
 			title=task.title,
 			description=task.description,
 			scheduled_time=next_time,
+			duration_minutes=task.duration_minutes,
+			priority=task.priority,
 			recurrence=task.recurrence,
 			completed=False,
 			pet=task.pet,
@@ -221,6 +231,11 @@ class Scheduler:
 		return warnings
 
 	def prioritize_tasks(self, day: date) -> list[Task]:
-		"""Get tasks for a day sorted by scheduled time (earliest first)."""
+		"""Get tasks for a day sorted by priority first, then time."""
 		day_tasks = self.get_tasks_for_day(day)
-		return sorted(day_tasks, key=lambda t: t.scheduled_time)
+		priority_rank = {
+			TaskPriority.HIGH: 0,
+			TaskPriority.MEDIUM: 1,
+			TaskPriority.LOW: 2,
+		}
+		return sorted(day_tasks, key=lambda t: (priority_rank[t.priority], t.scheduled_time))

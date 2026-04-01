@@ -1,7 +1,7 @@
 import pytest
 from datetime import date, datetime, timedelta
 
-from pawpal_system import Owner, Pet, RecurrenceType, Scheduler, Task
+from pawpal_system import Owner, Pet, RecurrenceType, Scheduler, Task, TaskPriority
 
 
 class TestTask:
@@ -212,6 +212,32 @@ class TestScheduler:
         prioritized = scheduler.prioritize_tasks(today)
         assert prioritized[0].title == "Morning Task"
         assert prioritized[1].title == "Afternoon Task"
+
+    def test_prioritize_tasks_respects_priority_before_time(self):
+        """Verify higher-priority tasks come before lower-priority ones."""
+        scheduler = Scheduler()
+        today = date.today()
+
+        low_early = Task(
+            title="Low Early",
+            description="Low priority",
+            scheduled_time=datetime.combine(today, datetime.min.time().replace(hour=8)),
+            priority=TaskPriority.LOW,
+            recurrence=RecurrenceType.NONE,
+        )
+        high_late = Task(
+            title="High Late",
+            description="High priority",
+            scheduled_time=datetime.combine(today, datetime.min.time().replace(hour=9)),
+            priority=TaskPriority.HIGH,
+            recurrence=RecurrenceType.NONE,
+        )
+
+        scheduler.add_task(low_early)
+        scheduler.add_task(high_late)
+
+        prioritized = scheduler.prioritize_tasks(today)
+        assert [task.title for task in prioritized] == ["High Late", "Low Early"]
 
     def test_sort_by_time_returns_chronological_order(self):
         """Verify sort_by_time returns tasks from earliest to latest."""

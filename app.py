@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import datetime, time
 
-from pawpal_system import Owner, Pet, RecurrenceType, Scheduler, Task
+from pawpal_system import Owner, Pet, RecurrenceType, Scheduler, Task, TaskPriority
 
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
 
@@ -110,6 +110,19 @@ with st.form("add_task_form", clear_on_submit=True):
             format_func=lambda r: r.value,
         )
 
+    extra_col1, extra_col2 = st.columns(2)
+    with extra_col1:
+        duration_minutes = st.number_input(
+            "Duration (minutes)", min_value=5, max_value=480, value=30, step=5
+        )
+    with extra_col2:
+        priority = st.selectbox(
+            "Priority",
+            [TaskPriority.HIGH, TaskPriority.MEDIUM, TaskPriority.LOW],
+            index=1,
+            format_func=lambda p: p.value,
+        )
+
     task_description = st.text_input("Task description", value="Walk around the block")
     selected_pet_name = st.selectbox(
         "Assign to pet",
@@ -134,6 +147,8 @@ if add_task_clicked:
             title=clean_task_title,
             description=clean_task_description,
             scheduled_time=task_dt,
+            duration_minutes=int(duration_minutes),
+            priority=priority,
             recurrence=recurrence,
         )
         selected_pet.add_task(task)
@@ -154,12 +169,76 @@ if all_tasks:
                 "title": task.title,
                 "pet": task.pet.name if task.pet else "",
                 "time": task.scheduled_time.strftime("%H:%M"),
+                "duration_min": task.duration_minutes,
+                "priority": task.priority.value,
                 "recurrence": task.recurrence.value,
                 "completed": task.completed,
             }
             for task in all_tasks
         ]
     )
+
+    st.markdown("#### Edit a Task")
+    task_labels = [
+        f"{task.pet.name if task.pet else 'Unknown'} | {task.title} | {task.scheduled_time.strftime('%H:%M')}"
+        for task in all_tasks
+    ]
+    selected_task_label = st.selectbox("Select task to edit", task_labels)
+    selected_task = all_tasks[task_labels.index(selected_task_label)]
+
+    with st.form("edit_task_form"):
+        edit_col1, edit_col2 = st.columns(2)
+        with edit_col1:
+            edit_title = st.text_input("Title", value=selected_task.title)
+            edit_time = st.time_input("Time", value=selected_task.scheduled_time.time())
+            edit_duration = st.number_input(
+                "Duration (minutes)",
+                min_value=5,
+                max_value=480,
+                value=selected_task.duration_minutes,
+                step=5,
+            )
+        with edit_col2:
+            edit_priority = st.selectbox(
+                "Priority",
+                [TaskPriority.HIGH, TaskPriority.MEDIUM, TaskPriority.LOW],
+                index=[TaskPriority.HIGH, TaskPriority.MEDIUM, TaskPriority.LOW].index(
+                    selected_task.priority
+                ),
+                format_func=lambda p: p.value,
+            )
+            edit_recurrence = st.selectbox(
+                "Recurrence",
+                [
+                    RecurrenceType.NONE,
+                    RecurrenceType.DAILY,
+                    RecurrenceType.WEEKLY,
+                    RecurrenceType.MONTHLY,
+                ],
+                index=[
+                    RecurrenceType.NONE,
+                    RecurrenceType.DAILY,
+                    RecurrenceType.WEEKLY,
+                    RecurrenceType.MONTHLY,
+                ].index(selected_task.recurrence),
+                format_func=lambda r: r.value,
+            )
+            edit_completed = st.checkbox("Completed", value=selected_task.completed)
+
+        edit_description = st.text_input("Description", value=selected_task.description)
+        save_edit_clicked = st.form_submit_button("Save task edits")
+
+    if save_edit_clicked:
+        selected_task.title = edit_title.strip() or selected_task.title
+        selected_task.description = edit_description.strip()
+        selected_task.scheduled_time = datetime.combine(
+            selected_task.scheduled_time.date(), edit_time
+        )
+        selected_task.duration_minutes = int(edit_duration)
+        selected_task.priority = edit_priority
+        selected_task.recurrence = edit_recurrence
+        selected_task.completed = edit_completed
+        st.success("Task updated.")
 else:
     st.info("No tasks yet. Add one above.")
 
@@ -187,7 +266,13 @@ if generate_clicked:
                     "time": task.scheduled_time.strftime("%H:%M"),
                     "task": task.title,
                     "pet": task.pet.name if task.pet else "",
+                    "priority": task.priority.value,
+                    "duration_min": task.duration_minutes,
                     "recurrence": task.recurrence.value,
+                    "reason": (
+                        f"{task.priority.value.title()} priority; scheduled at "
+                        f"{task.scheduled_time.strftime('%H:%M')}"
+                    ),
                 }
                 for task in today_tasks
             ]
